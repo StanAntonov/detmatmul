@@ -1,0 +1,50 @@
+{
+  "spec_version": "1.0",
+  "scale_factor": 65536,
+  "runs": [
+    {
+      "run_id": "20260325_164337",
+      "gpu": "NVIDIA GeForce GTX 1050",
+      "sm": "6.1",
+      "host": "DESKTOP-AVLQR4R",
+      "os": "Windows 10",
+      "timestamp": "2026-03-25T16:43:49.983440",
+      "spec_ver": "1.0",
+      "mode": "gpu",
+      "hashes": {
+        "64x64x64_normal_seed42_relu": "bc071e9c97c9bc2d3d480da4cbb687d2da83ecd92f1205d609b19276e4894b83",
+        "256x256x256_normal_seed42_relu": "0a957271d84451bed064a258a4ee9e933f8ed05752319d7dc4f55f0a4c53fe50",
+        "512x128x512_normal_seed42_relu": "c119f75f9a981019ceb7a13658c68cc4a01202076421319b5cd832d9f99ce330",
+        "128x512x128_normal_seed42_relu": "56983316d2fa28d2d3b8622cb75491bf940dcd0ef8fa496cf4e79f2393171b88",
+        "511x255x767_normal_seed42_relu": "571bae0b212da5d3aa89cd968e4af28eeac5293a58a0ffdf86fb9c1337c87f84",
+        "64x64x64_normal_seed137_relu": "b9121ae478ff6a5dc0bb9ed876648551c7a15f2a967e5dfb4da96267c6e0e062",
+        "256x256x256_normal_seed137_relu": "84562ca74ac08d554312b5a3d191a123ecc585c626fa3a93737a8c9ac3142c61",
+        "512x128x512_normal_seed137_relu": "14701766f4f6af06544c96f35f21ccab2e16af4317535eecd2ac32c000d2a3a1",
+        "128x512x128_normal_seed137_relu": "8275ca6cc8669a40613560b8a434b1db0fdd85166661e5c7ae956eefa59dc102",
+        "511x255x767_normal_seed137_relu": "0a16789d350648dc30f1d062fd2c558468f4870df47fab0a59a045ee44502b70",
+        "64x64x64_normal_seed999_relu": "8c7c74f93d00496b8e835bf3ffb191770d3e8a24bada9ebbe95e8b72b1e3b3ce",
+        "256x256x256_normal_seed999_relu": "3214d33775a85f0a55c2317b3d2ce844eb4b62497c4c4e39d456333782e14753",
+        "512x128x512_normal_seed999_relu": "c67433c10da617da908fd049affa831117729add9ce59d3af5439c8f6ea71dc5",
+        "128x512x128_normal_seed999_relu": "216e59ce3b7d8e638dd6e65956e2af5baeab83bd2c1685e59d57565c874cbd56",
+        "511x255x767_normal_seed999_relu": "a12a3dc5c1d33fb69a5758396f319b10ba8b6483b21329ba668d0b77cb11f573",
+        "64x64x64_normal_seed31415_relu": "f374929d88b84ff16d3bf571596dc9678f04aa9502c70752ff9e85e8ee6c9b2b",
+        "256x256x256_normal_seed31415_relu": "5359e2622864558f701cc38c478e6e8db6300c0e1aabb8e76999825737c42b2e",
+        "512x128x512_normal_seed31415_relu": "4be6897990208cb6cbb7edff67d46ca48a809b036a3dde4bb9950c4ff09a0c8a",
+        "128x512x128_normal_seed31415_relu": "2517eafe0e08f7a08c80cc158935eda4770babb346877170e994a350121a6891",
+        "511x255x767_normal_seed31415_relu": "f98913a860b0d3cc72d8fde53028b38d419a4a0430f357e48d90803ec0b4503f",
+        "64x64x64_normal_seed271828_relu": "bf5c38d0127dd537918bd285bc50613b811998a85a71891c5e6ac734681b5c6a",
+        "256x256x256_normal_seed271828_relu": "7cdc934859930ecd60e350896ac1d3c0b61540dba7bb623e4b9f73c672ee9976",
+        "512x128x512_normal_seed271828_relu": "0cf7cce377bb5f6d277e4a7a7b75029d11befe0265cc4264cb4b1c96b010d741",
+        "128x512x128_normal_seed271828_relu": "84ad7fecfe522b7fc6debddbdb0df783e783bf3b1089f1a1b35b25096fe60846",
+        "511x255x767_normal_seed271828_relu": "49b2d17ba146720e802320090b22df040fe886cc08b6c06f69abf68c845eaaae",
+        "64x64x64_zeros_seed0_relu": "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "64x64x64_ones_seed0_norelu": "7db145825e9345155a5c3eadcbef97f09cf7104405de8b09c3d6097e8c54e833",
+        "64x64x64_tiny_seed7_norelu": "916ef4f04d04b0ed0e9b1ded3eaf1a03f12732907329e2d16f8af942e58d5e6e",
+        "64x32x64_large_seed7_norelu": "4d814c3a66e7c276f9234dc6408c86343abe664c964d69dc9ec29959a4a19829",
+        "128x64x128_neg_heavy_seed55_relu": "1ff9a581b83dce2cfffd0290baa2cc3fc3e76a26bb07a625388d1488fed7993a",
+        "300x150x200_odd_rect_seed42_norelu": "91de0835d225a715f1a38d2c3d38fbd264bc18e8f30696428846ce00d7b2f679"
+      },
+      "correct": true
+    }
+  ]
+}
