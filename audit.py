@@ -108,25 +108,38 @@ S_W_COLS = TILE_N + 1   # +1 padding
 def _default_manifest_path():
     """
     Resolve a writable path for the manifest file.
-    Priority: same folder as the script -> Desktop -> temp dir.
-    This avoids the Windows protected-directory PermissionError when
-    the script lives in C:/Users/name/ and writes to CWD.
+    Handles the absence of __file__ in interactive environments like Colab.
     """
-    candidates = [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "hash_manifest.json"),
+    candidates = []
+    
+    # Only attempt to use __file__ if it is defined (standard script mode)
+    if "__file__" in globals():
+        try:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            candidates.append(os.path.join(script_dir, "hash_manifest.json"))
+        except NameError:
+            pass
+            
+    # Add other locations that work well in Colab and local environments
+    candidates.extend([
+        os.path.join(os.getcwd(), "hash_manifest.json"), # Current working directory
         os.path.join(os.path.expanduser("~"), "Desktop", "hash_manifest.json"),
         os.path.join(os.path.expanduser("~"), "Documents", "hash_manifest.json"),
-    ]
+    ])
+
     import tempfile
     candidates.append(os.path.join(tempfile.gettempdir(), "hash_manifest.json"))
+
     for path in candidates:
         try:
+            # Test if the directory is writable
+            os.makedirs(os.path.dirname(path), exist_ok=True)
             with open(path, "a") as _f:
                 pass
             return path
-        except PermissionError:
+        except (PermissionError, OSError):
             continue
-    return candidates[-1]   # temp dir always works
+    return candidates[-1]   # Fallback to temp dir
 
 MANIFEST_FILE = _default_manifest_path()
 
