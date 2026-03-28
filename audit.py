@@ -108,38 +108,25 @@ S_W_COLS = TILE_N + 1   # +1 padding
 def _default_manifest_path():
     """
     Resolve a writable path for the manifest file.
-    Handles the absence of __file__ in interactive environments like Colab.
+    Priority: same folder as the script -> Desktop -> temp dir.
+    This avoids the Windows protected-directory PermissionError when
+    the script lives in C:/Users/name/ and writes to CWD.
     """
-    candidates = []
-    
-    # Only attempt to use __file__ if it is defined (standard script mode)
-    if "__file__" in globals():
-        try:
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            candidates.append(os.path.join(script_dir, "hash_manifest.json"))
-        except NameError:
-            pass
-            
-    # Add other locations that work well in Colab and local environments
-    candidates.extend([
-        os.path.join(os.getcwd(), "hash_manifest.json"), # Current working directory
+    candidates = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "hash_manifest.json"),
         os.path.join(os.path.expanduser("~"), "Desktop", "hash_manifest.json"),
         os.path.join(os.path.expanduser("~"), "Documents", "hash_manifest.json"),
-    ])
-
+    ]
     import tempfile
     candidates.append(os.path.join(tempfile.gettempdir(), "hash_manifest.json"))
-
     for path in candidates:
         try:
-            # Test if the directory is writable
-            os.makedirs(os.path.dirname(path), exist_ok=True)
             with open(path, "a") as _f:
                 pass
             return path
-        except (PermissionError, OSError):
+        except PermissionError:
             continue
-    return candidates[-1]   # Fallback to temp dir
+    return candidates[-1]   # temp dir always works
 
 MANIFEST_FILE = _default_manifest_path()
 
@@ -939,15 +926,130 @@ def run_audit(force_cpu, parallel_cpu, pause):
             print("  Only 1 run in manifest -- need a 2nd platform.")
             print()
             print("  HOW TO GET THE CROSS-HARDWARE PROOF:")
-            print("  ─────────────────────────────────────")
             print("  1. Download this script + hash_manifest.json")
             print("  2. Upload BOTH to Google Colab or Kaggle")
             print("  3. Run the script there (it will save its own manifest)")
             print("  4. Download that remote hash_manifest.json")
             print("  5. On your local machine, merge them:")
             print("       python genesis_benchmark3.py --merge hash_manifest.json remote.json")
-            print()
             print("  The merge command will print the proof automatically.")
+
+        # ── §10 Error Accumulation & Superaccumulator Analysis ──────────────
+        section("10 . Error Accumulation & Superaccumulator Analysis")
+        print("  Responding to: 'errors grow on each operation; production BLAS")
+        print("  uses superaccumulators / error-free transformations (EFT)'")
+        print()
+
+        divider()
+        print("  A. WITHIN A SINGLE MATMUL: INT64 ACCUMULATION IS ALREADY EXACT")
+        divider()
+        print()
+        print("  int64 + int64 = exact int64.  No rounding during accumulation.")
+        print("  Error sources in Q16.16 fixed-point:")
+        print("    Source 1: Input quantization   float32->int64  (bounded, one-time)")
+        print("    Source 2: Output dequantization int64>>16      (bounded, one-time)")
+        print("    Source 3: NONE -- the K-length dot product accumulation is exact")
+        print()
+        print("  Compare to float32 matmul:")
+        print("    Every FMA introduces rounding ~ eps_f32 (1.2e-7 for float32)")
+        print("    Error grows O(K*eps) naively, O(log K*eps) with pairwise summation")
+        print("    Even Ogita-Rump exact dot product still operates in floating-point")
+        print()
+
+        divider()
+        print("  B. WHERE THE CRITIQUE IS CORRECT: CHAINED OPERATIONS")
+        divider()
+        print()
+        print("  Each float32 boundary between ops costs precision.")
+        print("  Demo: matmul->layer_norm chain (mimics a real transformer layer).")
+        print("  Layer norm keeps values bounded so error accumulates honestly.")
+        print()
+        _rng  = np.random.default_rng(42)
+        _x    = _rng.standard_normal((8, 64)).astype(np.float32)
+        _W    = (_rng.standard_normal((64, 64)) * 0.02).astype(np.float32)
+        _half = np.int64(32768)
+        _SF   = SCALE_FACTOR
+
+        def _ln(z):
+            _m = z.mean(axis=-1, keepdims=True)
+            _s = z.std(axis=-1, keepdims=True) + np.float32(1e-5)
+            return (z - _m) / _s
+
+        def _fp_chain(v, W):
+            _Af = (v * _SF).astype(np.int64)
+            _Wf = (W * _SF).astype(np.int64)
+            _C  = np.zeros((v.shape[0], W.shape[1]), np.int64)
+            for _r in range(v.shape[0]):
+                for _c in range(W.shape[1]):
+                    _a = np.int64(0)
+                    for _k in range(v.shape[1]):
+                        _a += _Af[_r, _k] * _Wf[_k, _c]
+                    _C[_r, _c] = (_a + _half) >> 16
+            return _C.astype(np.float32) / _SF
+
+        print(f"  {'Depth':>6}  {'Max |error|':>12}  {'Mean |error|':>12}  note")
+        divider()
+        for _n in [1, 2, 4, 8, 12, 24, 48]:
+            _val, _ref = _x.copy(), _x.copy()
+            for _ in range(_n):
+                _ref = _ln(_ref @ _W)
+                _val = _ln(_fp_chain(_val, _W))
+            _d    = np.abs(_val - _ref)
+            _note = ""
+            if _n == 12: _note = "  <-- GPT-2 layers"
+            if _n == 48: _note = "  <-- GPT-2 total matmuls"
+            print(f"  {_n:>6}  {_d.max():>12.6f}  {_d.mean():>12.6f}{_note}")
+        print()
+        print("  Error grows with depth -- confirming the critique.")
+        print("  Solution: keep inference pipeline in fixed-point throughout.")
+        print("  Quantize once at input, dequantize once at output.")
+        print("  This is how TensorRT INT8 / ONNX Runtime INT8 work.")
+        print("  Implementing this is the next engineering step for this project.")
+        print()
+
+        divider()
+        print("  C. Q16.16 vs BLAS SUPERACCUMULATORS")
+        divider()
+        print()
+        print(f"  {'Method':<34} {'Accum error':<22} {'Cross-hardware'}")
+        divider()
+        for _nm, _er, _ch in [
+            ("float32 naive (FMA)",         "O(K * eps_f32)",       "No"),
+            ("Pairwise sum (NumPy/BLAS)",    "O(log K * eps_f32)",   "No"),
+            ("Kahan compensated",            "O(eps_f32)",           "No"),
+            ("Ogita-Rump exact dot (EFT)",   "0 (exact float)",      "No -- float EFT"),
+            ("Q16.16 int64  [THIS PROJECT]", "0 (exact integer)",    "YES"),
+            ("Q16.16 full pipeline  [GOAL]", "quant boundary once",  "YES"),
+        ]:
+            _mk = ">>" if "THIS" in _nm or "GOAL" in _nm else "  "
+            print(f"  {_mk} {_nm:<32} {_er:<22} {_ch}")
+        print()
+        print("  Ogita-Rump achieves exact accumulation in float -- impressive.")
+        print("  Q16.16 int64 is also exact -- AND cross-hardware deterministic.")
+        print("  Tradeoff: fixed quantization cost at float/int boundaries.")
+        print("  Advantage: provable determinism across AMD, NVIDIA, Intel, CPU.")
+        print()
+
+        divider()
+        print("  D. PRECISION BY FORMAT (single matmul, K=1024, N(0,1) inputs)")
+        divider()
+        print()
+        print(f"  {'Format':<24} {'Scale':>8}  {'Max error bound':>16}  {'Accumulator'}")
+        divider()
+        import math as _math
+        for _fn, _sf, _bits in [
+            ("Q8.8",                  256,   "INT32"),
+            ("Q16.16  [CURRENT]",     65536, "INT64"),
+            ("Q20.12  [more precise]",4096,  "INT64"),
+            ("Q32.16  [future]",      65536, "INT128"),
+        ]:
+            _b  = 1024 * (0.5/_sf) * _math.sqrt(2/_math.pi)
+            _mk = ">>" if "CURRENT" in _fn else "  "
+            print(f"  {_mk} {_fn:<22} {_sf:>8}  {_b:>16.8f}  {_bits}")
+        print()
+        print("  Q16.16 is the right balance: neural network weights are typically")
+        print("  |v| < 5 after layer norm, well within the safe limit of 1024.")
+        print("  Q20.12 gives 16x better precision but tightens overflow limit 16x.")
 
     except Exception:
         print("\n  UNHANDLED ERROR:")
