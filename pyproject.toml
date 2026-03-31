@@ -7,8 +7,36 @@ name = "detmatmul"
 version = "1.0.0"
 description = "Deterministic cross-hardware matrix multiplication with SHA-256 verification"
 readme = "README.md"
-license = { text = "Apache 2.0" }
+license = { text = "Apache-2.0" }
 requires-python = ">=3.10"
+authors = [
+    { name = "Stan Antonov", email = "placeholder@users.noreply.github.com" }
+]
+keywords = [
+    "deterministic",
+    "matrix-multiplication",
+    "fixed-point",
+    "reproducibility",
+    "gpu",
+    "cuda",
+    "zk-ml",
+    "ai-safety",
+    "sha256",
+    "cross-hardware",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "numpy>=1.24",
     "numba>=0.57",
@@ -17,9 +45,15 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/StanAntonov/detmatmul"
 Repository = "https://github.com/StanAntonov/detmatmul"
+"Bug Tracker" = "https://github.com/StanAntonov/detmatmul/issues"
+Changelog = "https://github.com/StanAntonov/detmatmul/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
-dev = ["pytest", "torch"]
+torch   = ["torch>=2.0"]
+gpt2    = ["transformers>=4.30", "tiktoken>=0.5"]
+api     = ["fastapi>=0.100", "uvicorn>=0.23"]
+dev     = ["pytest>=7.0", "torch>=2.0"]
+all     = ["torch>=2.0", "transformers>=4.30", "tiktoken>=0.5", "fastapi>=0.100", "uvicorn>=0.23"]
 
 [project.scripts]
 detmatmul-audit  = "detmatmul.cli:main_audit"
@@ -29,3 +63,10 @@ detmatmul-merge  = "detmatmul.cli:main_merge"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["detmatmul*"]
+
+[tool.setuptools.package-data]
+detmatmul = ["manifests/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts   = "-v"
