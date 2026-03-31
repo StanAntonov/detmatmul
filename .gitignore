@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+wheels/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Numba cache
+.numba_cache/
+numba_cache/
+__numba_cache__/
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local manifests (user-generated, not for committing)
+hash_manifest.json
+merged_manifest.json
+verified_manifest.json
+gpt2_results.json
+machine_*.json
+
+# Model weights cache
+*.bin
+*.safetensors
+
+# Secrets / env
+.env
+.env.*

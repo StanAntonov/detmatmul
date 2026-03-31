@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "detmatmul"
+version = "1.0.0"
+description = "Deterministic cross-hardware matrix multiplication with SHA-256 verification"
+readme = "README.md"
+license = { text = "Apache 2.0" }
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "numba>=0.57",
+]
+
+[project.urls]
+Homepage = "https://github.com/StanAntonov/detmatmul"
+Repository = "https://github.com/StanAntonov/detmatmul"
+
+[project.optional-dependencies]
+dev = ["pytest", "torch"]
+
+[project.scripts]
+detmatmul-audit  = "detmatmul.cli:main_audit"
+detmatmul-verify = "detmatmul.cli:main_verify"
+detmatmul-merge  = "detmatmul.cli:main_merge"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["detmatmul*"]
