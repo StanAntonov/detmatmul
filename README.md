@@ -1,5 +1,10 @@
 # detmatmul
 
+[![Tests](https://github.com/StanAntonov/detmatmul/actions/workflows/test.yml/badge.svg)](https://github.com/StanAntonov/detmatmul/actions/workflows/test.yml)
+[![PyPI](https://img.shields.io/pypi/v/detmatmul)](https://pypi.org/project/detmatmul)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/StanAntonov/detmatmul/blob/main/notebooks/verify_colab.ipynb)
+
 **Deterministic cross-hardware matrix multiplication with SHA-256 verification.**
 
 `detmatmul` guarantees that the same computation produces **bit-exact results** regardless of GPU brand, GPU generation, or operating system - verified by SHA-256 hash comparison.
@@ -45,12 +50,26 @@ For some applications it is critical:
 ## Quick start
 
 ```bash
+pip install detmatmul
+```
+
+Or from source:
+
+```bash
 git clone https://github.com/StanAntonov/detmatmul
 cd detmatmul
 pip install -e .
 ```
 
 **Requirements:** Python 3.10+, NumPy, Numba. CUDA optional - falls back to CPU automatically.
+
+Optional extras:
+
+```bash
+pip install detmatmul[gpt2]    # GPT-2 demo (transformers + tiktoken)
+pip install detmatmul[api]     # REST API (fastapi + uvicorn)
+pip install detmatmul[all]     # everything
+```
 
 ```python
 import numpy as np
@@ -181,6 +200,22 @@ On production GPUs the deterministic kernel outperforms standard NumPy float32.
 | 2048×2048 | 1.8× slower | **6.2× faster** | **2.7× faster** |
 
 The GTX 1050 is a consumer card from 2016. On any modern data-centre GPU, determinism is free.
+
+---
+
+## Verify on your hardware
+
+The fastest way to verify your machine and contribute to the proof:
+
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/StanAntonov/detmatmul/blob/main/notebooks/verify_colab.ipynb)
+
+Click the badge, run all cells, download `hash_manifest.json`, and open an issue titled `Verification: [your hardware]`. Takes about 5 minutes. No setup required.
+
+Or from the command line:
+
+```bash
+detmatmul-verify manifests/hash_manifest.json
+```
 
 ---
 
